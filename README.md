@@ -1,5 +1,7 @@
 # android emulatorをwebで動かす
 
+<img src="https://user-images.githubusercontent.com/12981948/120243013-5c5c2d00-c2a1-11eb-9055-062651302c4f.gif" width="400">
+
 ## インストール
 
 ```
