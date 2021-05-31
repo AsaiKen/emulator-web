@@ -6,7 +6,7 @@
 <body>
 
 <div style="display: flex;justify-content: center;">
-  <div id="emulator" style="width: 320px; height: 640px; border: black solid 1px" tabindex="0"></div>
+  <video id="emulator" muted autoplay style="width: 320px; height: 640px; border: black solid 1px" tabindex="0"></video>
   <div style="display:flex; flex-direction:column;">
     <input type="button" id="back" value="Back">
     <input type="button" id="home" value="Home">
@@ -92,6 +92,92 @@
   overview.addEventListener('click', function(e) {
     socket.emit('overview');
   });
+
+  let peerConnection = null;
+
+  function disconnect() {
+    if (peerConnection) {
+      peerConnection.close();
+      peerConnection = null;
+    }
+  }
+
+  function handleTrack(e) {
+    console.log('track', e);
+    if (!emulator.srcObject) {
+      emulator.srcObject = new MediaStream();
+    }
+    emulator.srcObject.addTrack(e.track);
+  }
+
+  function handleConnectionStateChange(e) {
+    console.log('connection state changed', peerConnection.connectionState);
+    switch (peerConnection.connectionState) {
+      case 'disconnected':
+        // At least one of the ICE transports for the connection is in the "disconnected" state
+        // and none of the other transports are in the state "failed", "connecting", or "checking".
+      case 'failed':
+        // One or more of the ICE transports on the connection is in the "failed" state.
+      case 'closed':
+        //The RTCPeerConnection is closed.
+        disconnect();
+    }
+  }
+
+  function handleLocalIceCandidate(e) {
+    console.log('send candidate');
+    if (e.candidate === null) {
+      return;
+    }
+    socket.emit('jsep', { candidate: e.candidate });
+  }
+
+  function handleRemoteIceCandidate(iceCandidate) {
+    peerConnection.addIceCandidate(new RTCIceCandidate(iceCandidate));
+  }
+
+  socket.on('signal', async message => {
+    // console.log(message);
+    try {
+      const signal = JSON.parse(message);
+      if (signal.start) {
+        console.log('start');
+        peerConnection = new RTCPeerConnection(signal.start);
+        // trackが追加されたら
+        peerConnection.ontrack = handleTrack;
+        // ICE candidateを送れる状態になったら
+        peerConnection.onicecandidate = handleLocalIceCandidate;
+        // 接続異常が出たら
+        peerConnection.onconnectionstatechange = handleConnectionStateChange;
+      } else if (signal.bye) {
+        console.log('bye');
+        disconnect();
+      } else if (signal.sdp) {
+        console.log('receive sdp');
+        // リモートのSDP offerを受信
+        const sdp = signal;
+        // setRemoteDescriptionするとpeerConnection.signalingStateが"have-remote-offer"になる
+        peerConnection.setRemoteDescription(new RTCSessionDescription(sdp));
+        const answer = await peerConnection.createAnswer();
+        if (answer) {
+          console.log('send answer');
+          // setLocalDescriptionするとpeerConnection.signalingStateが"have-local-offer"になる
+          peerConnection.setLocalDescription(answer);
+          // SDP answerを送信
+          socket.emit('jsep', { sdp: answer });
+        } else {
+          disconnect();
+        }
+      } else if (signal.candidate) {
+        console.log('receive candidate');
+        // リモートのICE candidateを受信
+        handleRemoteIceCandidate(signal);
+      }
+    } catch (e) {
+      console.error('Failed to handle message: [' + message + '], due to: ' + JSON.stringify(e));
+    }
+  });
+
 </script>
 </body>
 </html>
