@@ -147,7 +147,7 @@
         peerConnection.ontrack = handleTrack;
         // ICE candidateを送れる状態になったら
         peerConnection.onicecandidate = handleLocalIceCandidate;
-        // 接続異常が出たら
+        // 接続状態が変わったら
         peerConnection.onconnectionstatechange = handleConnectionStateChange;
       } else if (signal.bye) {
         console.log('bye');
