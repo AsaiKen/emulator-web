@@ -11,7 +11,10 @@ $ ./node_modules/.bin/grpc_tools_node_protoc --include_imports --include_source_
 
 エミュレータ
 ```
-$ emulator -avd <AVD_NAME> -grpc 5556
+$ sdkmanager --sdk_root=$ANDROID_SDK_ROOT platform-tools emulator
+$ sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platforms;android-30" "system-images;android-30;google_apis_playstore;x86_64" "build-tools;30.0.2"
+$ avdmanager create avd -n "my_avd_30" -k "system-images;android-30;google_apis_playstore;x86_64"
+$ emulator -avd "my_avd_30" -grpc 5556
 ```
 
 node
