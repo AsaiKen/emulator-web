@@ -27,7 +27,7 @@ module.exports = socket => {
         console.error({ error });
         return;
       }
-      console.log(response);
+      // console.log(response);
     });
   }
 
@@ -83,7 +83,7 @@ module.exports = socket => {
         disconnect();
         return;
       }
-      console.log('guid', response);
+      // console.log('guid', response);
       guid = response;
       rtcConnected = true;
       streamingJsepMessage();
@@ -99,13 +99,13 @@ module.exports = socket => {
     request.setX(scaledMouse.x);
     request.setY(scaledMouse.y);
     request.setButtons(mouseDown ? mouseButton : 0);
-    console.log('sendMouse', request);
+    // console.log('sendMouse', request);
     client.sendMouse(request, (error, response) => {
       if (error) {
         console.error({ error });
         return;
       }
-      console.log(response);
+      // console.log(response);
     });
   });
 
@@ -130,7 +130,7 @@ module.exports = socket => {
         console.error({ error });
         return;
       }
-      console.log(response);
+      // console.log(response);
     });
   });
 
@@ -151,13 +151,12 @@ module.exports = socket => {
     const request = new RtcMessages.JsepMsg();
     request.setId(guid);
     request.setMessage(JSON.stringify(message));
-    console.log(message);
     rtcClient.sendJsepMessage(request, (error, response) => {
       if (error) {
         console.error({ error });
         return;
       }
-      console.log(response);
+      // console.log(response);
     });
   });
 
