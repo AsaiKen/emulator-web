@@ -16,7 +16,7 @@ $ emulator -avd <AVD_NAME> -grpc 5556
 
 node
 ```
-$ bin/www
+$ node server.js
 ```
 
 ## 参考
