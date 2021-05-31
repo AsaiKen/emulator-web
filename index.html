@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Emulator</title>
+</head>
+<body>
+
+<div style="display: flex;justify-content: center;">
+  <div id="emulator" style="width: 320px; height: 640px; border: black solid 1px" tabindex="0"></div>
+  <div style="display:flex; flex-direction:column;">
+    <input type="button" id="back" value="Back">
+    <input type="button" id="home" value="Home">
+    <input type="button" id="overview" value="Overview">
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+
+  const emulator = document.getElementById('emulator');
+  const back = document.getElementById('back');
+  const home = document.getElementById('home');
+  const overview = document.getElementById('overview');
+
+  let mouse = {
+    x: 0,
+    y: 0,
+    mouseDown: false,
+    // 0 == "no button"
+    // 1 == "left"
+    // 2 == "right".
+    mouseButton: 0,
+  };
+
+  emulator.addEventListener('mousedown', (e) => {
+    mouse = {
+      x: e.offsetX,
+      y: e.offsetY,
+      mouseDown: true,
+      mouseButton: e.button === 0 ? 1 : e.button === 2 ? 2 : 0
+    };
+    socket.emit('mouse', mouse);
+  });
+  emulator.addEventListener('mousemove', (e) => {
+    mouse.x = e.offsetX;
+    mouse.y = e.offsetY;
+    socket.emit('mouse', mouse);
+  });
+  emulator.addEventListener('mouseup', (e) => {
+    mouse = {
+      x: e.offsetX,
+      y: e.offsetY,
+      mouseDown: false,
+      mouseButton: 0
+    };
+    socket.emit('mouse', mouse);
+  });
+  emulator.addEventListener('mouseout', (e) => {
+    mouse = {
+      x: e.offsetX,
+      y: e.offsetY,
+      mouseDown: false,
+      mouseButton: 0
+    };
+    socket.emit('mouse', mouse);
+  });
+
+  emulator.addEventListener('keydown', (e) => {
+    const keyboard = { eventType: 'KEYDOWN', key: e.key };
+    console.log('keydown', keyboard);
+    socket.emit('keyboard', keyboard);
+  });
+  emulator.addEventListener('keyup', e => {
+    const keyboard = { eventType: 'KEYUP', key: e.key };
+    console.log('keydown', keyboard);
+    socket.emit('keyboard', keyboard);
+  });
+
+  emulator.addEventListener('dragstart', (e) => {
+    e.preventDefault();
+  });
+
+  back.addEventListener('click', function(e) {
+    socket.emit('back');
+  });
+
+  home.addEventListener('click', function(e) {
+    socket.emit('home');
+  });
+
+  overview.addEventListener('click', function(e) {
+    socket.emit('overview');
+  });
+</script>
+</body>
+</html>
